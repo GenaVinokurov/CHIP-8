@@ -26,11 +26,7 @@ app.post("/upload", (req, res) => {
     return res.status(400).json({ message: "No image data provided." });
   }
 
-  const filePath = path.join(
-    __dirname,
-    "../uploads",
-    `image_${Date.now()}.png`
-  );
+  const filePath = path.join(__dirname, "./uploads", `image_${Date.now()}.png`);
 
   fs.writeFile(filePath, base64Data, "base64", (err) => {
     if (err) {
@@ -44,4 +40,4 @@ app.post("/upload", (req, res) => {
   });
 });
 
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "./uploads")));
