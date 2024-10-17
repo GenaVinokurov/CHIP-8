@@ -4,9 +4,33 @@ const CanvasApp = {
   range: document.getElementById("jsRange"),
   mode: document.getElementById("mode"),
   saveButton: document.getElementById("saveButton"),
+  submitButton: document.getElementById("submitButton"),
   c: null,
   painting: false,
   modeType: "draw",
+
+  sendMessage() {
+    const imageData = "Hello from server  ";
+    fetch("/send-to-quic", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ data: imageData }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.message === "Data sent to QUIC") {
+          alert("Image sent to QUIC server!");
+        } else {
+          alert("Failed to send image.");
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("An error occurred while sending the image.");
+      });
+  },
 
   init() {
     this.c = this.canvas.getContext("2d");
@@ -16,21 +40,7 @@ const CanvasApp = {
     this.c.strokeStyle = "#000000";
 
     this.addEventListeners();
-  },
-
-  addEventListeners() {
-    this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
-    this.canvas.addEventListener("mousedown", this.startPainting.bind(this));
-    this.canvas.addEventListener("mouseup", this.stopPainting.bind(this));
-    this.canvas.addEventListener("mouseleave", this.stopPainting.bind(this));
-
-    Array.from(this.colorsCollection).forEach((el) => {
-      el.addEventListener("click", this.setColor.bind(this));
-    });
-
-    this.range.addEventListener("input", this.handleChangeWeight.bind(this));
-    this.mode.addEventListener("click", this.handleMode.bind(this));
-    this.saveButton.addEventListener("click", this.saveImage.bind(this));
+    this.sendMessage();
   },
 
   stopPainting() {
@@ -79,6 +89,46 @@ const CanvasApp = {
     link.download = "image.png";
     link.href = this.canvas.toDataURL("image/png");
     link.click();
+  },
+
+  submitImage() {
+    const imageData = this.canvas.toDataURL("image/png");
+    fetch("/upload", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ image: imageData }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.message === "Image uploaded successfully") {
+          alert("Image saved on server!");
+          // Optionally, display the uploaded image or update the UI
+        } else {
+          alert("Failed to save image.");
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("An error occurred while saving the image.");
+      });
+  },
+
+  addEventListeners() {
+    this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
+    this.canvas.addEventListener("mousedown", this.startPainting.bind(this));
+    this.canvas.addEventListener("mouseup", this.stopPainting.bind(this));
+    this.canvas.addEventListener("mouseleave", this.stopPainting.bind(this));
+
+    Array.from(this.colorsCollection).forEach((el) => {
+      el.addEventListener("click", this.setColor.bind(this));
+    });
+
+    this.range.addEventListener("input", this.handleChangeWeight.bind(this));
+    this.mode.addEventListener("click", this.handleMode.bind(this));
+    this.saveButton.addEventListener("click", this.saveImage.bind(this));
+    this.submitButton.addEventListener("click", this.submitImage.bind(this));
   },
 };
 

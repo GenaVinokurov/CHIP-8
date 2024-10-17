@@ -41,3 +41,25 @@ app.post("/upload", (req, res) => {
 });
 
 app.use("/uploads", express.static(path.join(__dirname, "./uploads")));
+
+// quic
+
+const quic = require("node-quic");
+
+app.post("/send-to-quic", (req, res) => {
+  const { data } = req.body;
+  console.log("express quic", quic);
+  // Connect to QUIC server and send data
+  quic
+    .connect(1234, "127.0.0.1")
+    .then((connection) => {
+      return connection.send(data);
+    })
+    .then((response) => {
+      // Process response from QUIC server
+      res.status(200).json({ message: "Data sent to QUIC", response });
+    })
+    .catch((error) => {
+      res.status(500).json({ message: "Error communicating with QUIC", error });
+    });
+});
