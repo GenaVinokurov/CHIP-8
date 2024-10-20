@@ -1,16 +1,34 @@
-const CanvasApp = {
-  canvas: document.getElementById("jsCanvas"),
-  colorsCollection: document.getElementsByClassName("controls_color"),
-  range: document.getElementById("jsRange"),
-  mode: document.getElementById("mode"),
-  saveButton: document.getElementById("saveButton"),
-  submitButton: document.getElementById("submitButton"),
-  c: null,
-  painting: false,
-  modeType: "draw",
+export default class CanvasApp {
+  canvas: HTMLCanvasElement;
+  colorsCollection: HTMLCollectionOf<Element>;
+  range: HTMLInputElement;
+  mode: HTMLButtonElement;
+  saveButton: HTMLButtonElement;
+  submitButton: HTMLButtonElement;
+  c: CanvasRenderingContext2D | null;
+  painting: boolean;
+  modeType: string;
 
-  sendMessage() {
-    const imageData = "Hello from server  ";
+  constructor() {
+    this.canvas = document.getElementById("jsCanvas") as HTMLCanvasElement;
+    this.colorsCollection = document.getElementsByClassName("controls_color");
+    this.range = document.getElementById("jsRange") as HTMLInputElement;
+    this.mode = document.getElementById("mode") as HTMLButtonElement;
+    this.saveButton = document.getElementById(
+      "saveButton"
+    ) as HTMLButtonElement;
+    this.submitButton = document.getElementById(
+      "submitButton"
+    ) as HTMLButtonElement;
+    this.c = null;
+    this.painting = false;
+    this.modeType = "draw";
+
+    this.init();
+  }
+
+  sendMessage(): void {
+    const imageData = "Hello from server";
     fetch("/send-to-quic", {
       method: "POST",
       headers: {
@@ -30,30 +48,35 @@ const CanvasApp = {
         console.error(err);
         alert("An error occurred while sending the image.");
       });
-  },
+  }
 
-  init() {
+  init(): void {
     this.c = this.canvas.getContext("2d");
-    this.canvas.height = 500;
-    this.canvas.width = 500;
-    this.c.lineWidth = this.range.value;
-    this.c.strokeStyle = "#000000";
+    if (this.c) {
+      this.canvas.height = 500;
+      this.canvas.width = 500;
+      this.c.lineWidth = this.range.valueAsNumber;
+      this.c.strokeStyle = "#000000";
+    }
 
     this.addEventListeners();
     this.sendMessage();
-  },
+  }
 
-  stopPainting() {
+  stopPainting(): void {
     this.painting = false;
-  },
+  }
 
-  startPainting() {
+  startPainting(): void {
     this.painting = true;
-  },
+  }
 
-  onMouseMove(e) {
+  onMouseMove(e: MouseEvent): void {
     const x = e.offsetX;
     const y = e.offsetY;
+
+    if (!this.c) return;
+
     if (!this.painting) {
       this.c.beginPath();
       this.c.moveTo(x, y);
@@ -70,28 +93,35 @@ const CanvasApp = {
         );
       }
     }
-  },
+  }
 
-  setColor(e) {
-    this.c.strokeStyle = e.target.style.backgroundColor;
-  },
+  setColor(e: MouseEvent): void {
+    const target = e.target as HTMLElement;
+    if (target && this.c) {
+      this.c.strokeStyle = target.style.backgroundColor;
+    }
+  }
 
-  handleChangeWeight(e) {
-    this.c.lineWidth = e.target.value;
-  },
+  handleChangeWeight(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    if (this.c) {
+      this.c.lineWidth = target.valueAsNumber;
+    }
+  }
 
-  handleMode() {
+  handleMode(): void {
     this.modeType = this.modeType === "draw" ? "erase" : "draw";
     this.mode.textContent = this.modeType === "draw" ? "Erase" : "Draw";
-  },
-  saveImage() {
+  }
+
+  saveImage(): void {
     const link = document.createElement("a");
     link.download = "image.png";
     link.href = this.canvas.toDataURL("image/png");
     link.click();
-  },
+  }
 
-  submitImage() {
+  submitImage(): void {
     const imageData = this.canvas.toDataURL("image/png");
     fetch("/upload", {
       method: "POST",
@@ -104,7 +134,6 @@ const CanvasApp = {
       .then((data) => {
         if (data.message === "Image uploaded successfully") {
           alert("Image saved on server!");
-          // Optionally, display the uploaded image or update the UI
         } else {
           alert("Failed to save image.");
         }
@@ -113,24 +142,21 @@ const CanvasApp = {
         console.error(err);
         alert("An error occurred while saving the image.");
       });
-  },
+  }
 
-  addEventListeners() {
+  addEventListeners(): void {
     this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
     this.canvas.addEventListener("mousedown", this.startPainting.bind(this));
     this.canvas.addEventListener("mouseup", this.stopPainting.bind(this));
     this.canvas.addEventListener("mouseleave", this.stopPainting.bind(this));
 
     Array.from(this.colorsCollection).forEach((el) => {
-      el.addEventListener("click", this.setColor.bind(this));
+      el.addEventListener("click", this.setColor.bind(this) as EventListener);
     });
 
     this.range.addEventListener("input", this.handleChangeWeight.bind(this));
     this.mode.addEventListener("click", this.handleMode.bind(this));
     this.saveButton.addEventListener("click", this.saveImage.bind(this));
     this.submitButton.addEventListener("click", this.submitImage.bind(this));
-  },
-};
-
-// Initialize the canvas application
-CanvasApp.init();
+  }
+}
