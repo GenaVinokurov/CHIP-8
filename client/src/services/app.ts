@@ -27,29 +27,6 @@ export default class CanvasApp {
     this.init();
   }
 
-  sendMessage(): void {
-    const imageData = "Hello from server";
-    fetch("/send-to-quic", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ data: imageData }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.message === "Data sent to QUIC") {
-          alert("Image sent to QUIC server!");
-        } else {
-          alert("Failed to send image.");
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-        alert("An error occurred while sending the image.");
-      });
-  }
-
   init(): void {
     this.c = this.canvas.getContext("2d");
     if (this.c) {
@@ -60,7 +37,6 @@ export default class CanvasApp {
     }
 
     this.addEventListeners();
-    this.sendMessage();
   }
 
   stopPainting(): void {
