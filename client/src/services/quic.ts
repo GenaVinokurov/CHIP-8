@@ -9,7 +9,7 @@ export default class Quic {
   sendMessage(): void {
     const imageData = "Hello from client";
 
-    fetch("http://localhost:3000/send-to-quic", {
+    fetch("http://localhost:1234/send-to-quic", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

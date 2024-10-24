@@ -26,37 +26,37 @@ app.listen(port, () => {
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-app.post("/send-to-quic", (req: Request, res: Response) => {
-  const { data } = req.body;
+// app.post("/send-to-quic", (req: Request, res: Response) => {
+//   const { data } = req.body;
 
-  const options = {
-    hostname: "localhost",
-    port: 1234,
-    path: "/",
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Content-Length": data.length,
-    },
-  };
+//   const options = {
+//     hostname: "localhost",
+//     port: 1234,
+//     path: "/",
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//       "Content-Length": data.length,
+//     },
+//   };
 
-  const proxy = http.request(options, (quicRes) => {
-    let responseData = "";
+//   const proxy = http.request(options, (quicRes) => {
+//     let responseData = "";
 
-    quicRes.on("data", (chunk) => {
-      responseData += chunk;
-    });
+//     quicRes.on("data", (chunk) => {
+//       responseData += chunk;
+//     });
 
-    quicRes.on("end", () => {
-      res.json({ message: "Response from QUIC server", data: responseData });
-    });
-  });
+//     quicRes.on("end", () => {
+//       res.json({ message: "Response from QUIC server", data: responseData });
+//     });
+//   });
 
-  proxy.write(JSON.stringify({ data }));
-  proxy.end();
+//   proxy.write(JSON.stringify({ data }));
+//   proxy.end();
 
-  proxy.on("error", (error) => {
-    console.error("Error in proxying to QUIC server:", error);
-    res.status(500).send("Error proxying to QUIC server");
-  });
-});
+//   proxy.on("error", (error) => {
+//     console.error("Error in proxying to QUIC server:", error);
+//     res.status(500).send("Error proxying to QUIC server");
+//   });
+// });
